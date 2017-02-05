@@ -20,6 +20,13 @@ Generate actual hy.js for highlight.js project:
 hy hyghlight.hy highlight.js > ~/projects/highlight.js/src/languages/hy.js
 ```
 
+Generate actual hylang.rb for Rouge project:
+
+```bash
+hy hyghlight.hy rouge > ~/projects/rouge/lib/rouge/lexers/hylang.rb
+```
+
+
 ## License
 
 License: MIT (Expat) - as in Hy itself.
