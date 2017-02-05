@@ -18,17 +18,24 @@
       (frozenset hy.core.reserved.keyword.kwlist))))
 
 
+(defmacro replace-line [spaces line-format end-of-line keywords]
+  `(+ line
+      (.join ~end-of-line
+             (list-comp
+              (.format ~line-format
+                       :space (* " " ~spaces)
+                       :line (.join " " keyword-line))
+              [keyword-line (partition ~keywords 10)]))
+      "\n"))
+
 (defn generate-highlight-js-file []
   (defn replace-highlight-js-keywords [line]
-    (if (in "// keywords" line)
-      (+ line
-         (.join " +\n"
-                (list-comp
-                 (.format "{space}'{line} '"
-                          :space (* " " 6)
-                          :line (.join " " keyword-line))
-                 [keyword-line (partition (hyghlight-names) 10)])))
-      line))
+    (cond
+     [(in "// keywords" line) (replace-line 6
+                                            "{space}'{line} '"
+                                            " +\n"
+                                            (hyghlight-names))]
+     [True line]))
 
   (with [f (open "templates/highlight_js/hy.js")]
         (.join ""
@@ -39,22 +46,14 @@
 (defn generate-rouge-file []
   (defn replace-rouge-keywords [line]
     (cond
-     [(in "@keywords" line) (+ line
-                                (.join "\n"
-                                       (list-comp
-                                        (.format "{space}{line}"
-                                                 :space (* " " 10)
-                                                 :line (.join " " keyword-line))
-                                        [keyword-line (partition (hyghlight-keywords) 10)]))
-                                "\n")]
-     [(in "@builtins" line) (+ line
-                                (.join "\n"
-                                       (list-comp
-                                        (.format "{space}{line}"
-                                                 :space (* " " 10)
-                                                 :line (.join " " keyword-line))
-                                        [keyword-line (partition (hyghlight-builtins) 10)]))
-                                "\n")]
+     [(in "@keywords" line) (replace-line 10
+                                          "{space}{line}"
+                                          "\n"
+                                          (hyghlight-keywords))]
+     [(in "@builtins" line) (replace-line 10
+                                          "{space}{line}"
+                                          "\n"
+                                          (hyghlight-builtins))]
      [True line]))
 
   (with [f (open "templates/rouge/hylang.rb")]
